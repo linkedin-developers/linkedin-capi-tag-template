@@ -1,0 +1,6 @@
+homepage: "https://www.linkedin.com"
+documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api"
+versions:
+  #latest version
+  - sha: 522b0ce592588e0ad7e69d9db934a98ff48d1a20
+    changeNotes: Initial release. 
