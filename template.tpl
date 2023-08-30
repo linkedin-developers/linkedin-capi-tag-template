@@ -9,7 +9,7 @@ Google may provide), as modified from time to time.
 ___INFO___
 
 {
-  "type": "CLIENT",
+  "type": "TAG",
   "id": "cvt_temp_public_id",
   "version": 1,
   "securityGroups": [],
@@ -39,7 +39,7 @@ ___TEMPLATE_PARAMETERS___
   {
     "type": "TEXT",
     "name": "conversionRuleUrn",
-    "displayName": "Conversion Rule URN",
+    "displayName": "ID of the Conversion Rule",
     "simpleValueType": true
   }
 ]
@@ -132,6 +132,12 @@ sendHttpRequest(CONV_API_ENDPOINT, {
     method: 'POST',
     timeout: 500,
 }, JSON.stringify(postBody)).then((result) => {
+  if (result.statusCode >= 200 && result.statusCode < 300) {
+    data.gtmOnSuccess();
+  } else {
+
+    data.gtmOnFailure();
+  }
 
   });
 
@@ -142,12 +148,12 @@ ___SERVER_PERMISSIONS___
   {
     "instance": {
       "key": {
-        "publicId": "send_http",
+        "publicId": "read_event_data",
         "versionId": "1"
       },
       "param": [
         {
-          "key": "allowedUrls",
+          "key": "eventDataAccess",
           "value": {
             "type": 1,
             "string": "any"
@@ -163,12 +169,12 @@ ___SERVER_PERMISSIONS___
   {
     "instance": {
       "key": {
-        "publicId": "read_event_data",
+        "publicId": "send_http",
         "versionId": "1"
       },
       "param": [
         {
-          "key": "eventDataAccess",
+          "key": "allowedUrls",
           "value": {
             "type": 1,
             "string": "any"
@@ -191,6 +197,6 @@ scenarios: []
 
 ___NOTES___
 
-Created on 8/25/2023, 3:26:19 PM
+Created on 8/30/2023, 8:13:16 AM
 
 
