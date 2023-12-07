@@ -156,7 +156,7 @@ var postBody ={'conversion': conversion_rule_urn,
 if (validateUserData()){
   sendConversionToLinkedIn();
 } else {
-  logToConsole('No conversion event was sent to CAPI. You must set 1 out of the 4 acceptable IDs (Acxiom, Oracle, SHA256_Email or LinkedIn_UUID) on eventModel.user_data to resolve this issue.');
+  logToConsole('No conversion event was sent to CAPI. You must set 1 out of the 4 acceptable IDs (Acxiom, Oracle, SHA256_Email or LinkedIn_UUID) on eventModel.user_data to resolve this issue or make certain to send both firstName and lastName under eventModel.user_data.address.first_name and eventModel.user_data.address.last_name.');
 }
 
 function validateUserData() {
@@ -170,6 +170,15 @@ function validateUserData() {
       break;
     }   
   }
+  // if the flag is false, check for first name last name. if both present, 
+  // flip flag to true, send the API call
+  if (data_is_valid_flag == false){
+    if (conversion_event.userData.userInfo.firstName != "" && conversion_event.userData.userInfo.lastName != ""){
+      data_is_valid_flag = true;
+    }
+  }
+  
+  
   return data_is_valid_flag;
 }
 
@@ -267,5 +276,3 @@ scenarios: []
 ___NOTES___
 
 Created on 9/27/2023, 11:40:00 AM
-
-
