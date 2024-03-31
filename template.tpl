@@ -13,7 +13,7 @@ ___INFO___
   "id": "cvt_temp_public_id",
   "version": 1,
   "securityGroups": [],
-  "displayName": "LinkedIn | CAPI Tag Template v2",
+  "displayName": "LinkedIn | CAPI Tag Template (20240307)",
   "brand": {
     "id": "brand_dummy",
     "displayName": "",
@@ -97,19 +97,45 @@ const userAddressData = (eventModel.user_data != null && eventModel.user_data.ad
 // Calculate hashed email if sha256_email_address is not set and email_address is set
 let userEmailSHA256 = '';
 let normalizedEmail = '';
-if (eventModel.user_data != null && eventModel.user_data.sha256_email_address == null && eventModel.user_data.email_address != null ) {
-  normalizedEmail = eventModel.user_data.email_address.toLowerCase();
-  userEmailSHA256 = sha256Sync(normalizedEmail, { outputEncoding: 'hex' });
-} else {
-  userEmailSHA256 = eventModel.user_data.sha256_email_address;
+// Check if eventModel.user_data exists before accessing its properties
+if (eventModel.user_data) {
+  // If sha256_email_address is not set and email_address is set, calculate userEmailSHA256
+  if (eventModel.user_data.sha256_email_address == null && eventModel.user_data.email_address != null && eventModel.user_data.email_address != '') {
+    // Calculate userEmailSHA256
+    normalizedEmail = eventModel.user_data.email_address.toLowerCase();
+    userEmailSHA256 = sha256Sync(normalizedEmail, { outputEncoding: 'hex' });
+  } else {
+    // Use the existing value of userEmailSHA256
+    userEmailSHA256 = eventModel.user_data.sha256_email_address || '';
+  }
 }
 
 // Define user information variables
-const userFirstName = userAddressData.first_name || '';
-const userLastName = userAddressData.last_name || '';
-const userCompanyName = eventModel.user_data.companyName || '';
-const userJobTitle = eventModel.user_data.jobTitle || '';
-const userCountryCode = userAddressData.country || '';
+let userFirstName = '';
+let userLastName = '';
+let userJobTitle = '';
+let userCountryCode = '';
+let userCompanyName = '';
+
+if (eventModel.user_data) {
+  // Check if companyName property exists before accessing it
+  userCompanyName = eventModel.user_data.companyName || '';
+
+  // Check if jobTitle property exists before accessing it
+  userJobTitle = eventModel.user_data.jobTitle || '';
+}
+
+// Check if eventModel.user_data exists before accessing its properties
+if (userAddressData != {}) {
+  // Check if first_name property exists before accessing it
+  userFirstName = (userAddressData.first_name != null) ? userAddressData.first_name : '';
+
+  // Check if last_name property exists before accessing it
+  userLastName = (userAddressData.last_name != null) ? userAddressData.last_name : '';
+
+  // Check if country property exists before accessing it
+  userCountryCode = (userAddressData.country != null) ? userAddressData.country : '';
+}
 
 // if userLinkedinFirstPartyID is set in eventModel.user_data, we use this one as 1st priority
 let userLinkedinFirstPartyID = (eventModel.user_data != null && eventModel.user_data.linkedinFirstPartyId != null) ? eventModel.user_data.linkedinFirstPartyId : '';
@@ -118,9 +144,6 @@ if (userLinkedinFirstPartyID == '') {
   const ga4UserPropPrefix = 'x-ga-mp2-user_properties.';
   userLinkedinFirstPartyID = getEventData(ga4UserPropPrefix + 'linkedinFirstPartyId') || '';
 }
-
-const userAcxiomID = (eventModel.user_data != null && eventModel.user_data.acxiomID != null) ? eventModel.user_data.acxiomID : '';
-const userMoatID = (eventModel.user_data != null && eventModel.user_data.moatID != null) ? eventModel.user_data.moatID : '';
 
 // Prepare user data for conversion event
 conversion_event.userData = {};
@@ -137,12 +160,14 @@ if (userLinkedinFirstPartyID != '') {
 }
 
 // Add Acxiom ID if exists
-if (eventModel.user_data.acxiomID != null) {
+if (eventModel.user_data != null && eventModel.user_data.acxiomID != null) {
+  const userAcxiomID = (eventModel.user_data != null && eventModel.user_data.acxiomID != null) ? eventModel.user_data.acxiomID : '';
   conversion_event.userData.userIds.push({ 'idType': 'ACXIOM_ID', 'idValue': userAcxiomID });
 }
 
 // Add Moat ID if exists
-if (eventModel.user_data.moatID != null) {
+if (eventModel.user_data != null && eventModel.user_data.moatID != null) {
+  const userMoatID = (eventModel.user_data != null && eventModel.user_data.moatID != null) ? eventModel.user_data.moatID : '';
   conversion_event.userData.userIds.push({ 'idType': 'ORACLE_MOAT_ID', 'idValue': userMoatID });
 }
 
@@ -175,7 +200,7 @@ if (userFirstName !== '' || userLastName !== '' || userCompanyName !== '' || use
 }
 
 // Retrieve event ID
-const eventId = (eventModel.eventId != null) ? eventModel.eventId : '';
+const eventId = (data.eventId != null) ? data.eventId : ((eventModel.eventId != null) ? eventModel.eventId : '');
 
 // Prepare request headers for API call
 const requestHeaders = {
@@ -192,40 +217,31 @@ var postBody = {
 };
 
 // Add event ID if exists
-if (eventModel.eventId != null) {
+if (eventId != ''){
   postBody.eventId = eventId;
 }
 
-// Retrieve conversion currency and amount
+// Retrieve conversion currency and amount from event data
 const conversionCurrency = (eventModel.currency != null) ? eventModel.currency : "";
 const conversionAmount = (eventModel.value != null) ? eventModel.value : "";
 
 // Parse conversion value from data if provided
-let conversionValue = { "currencyCode": conversionCurrency, "amount": conversionAmount.toString() };
-if (typeof data.conversionValue === 'string' && data.conversionValue.trim() !== '') {
-  let parsedValue;
-  let jsonError = false;
+let conversionValue = { "currencyCode": conversionCurrency.toUpperCase(), "amount": conversionAmount.toString() };
 
-  // Attempt to parse JSON
-  parsedValue = JSON.parse(data.conversionValue);
-
-  // Check if parsing successful and parsed value is an object
-  if (parsedValue && typeof parsedValue === 'object') {
-    conversionValue = parsedValue;
-  } else {
-    jsonError = true;
-  }
-
-  // Handle JSON parsing error
-  if (jsonError) {
-    logToConsole("Error parsing conversion value JSON.");
-    logToConsole("Using default conversion value.");
-  }
-}
-
-// Add conversion value to POST body if currency and amount are provided
+// Add conversion value to POST body if currency and amount are provided from  event data
+// If currency and amount are not provided, use the TAG conversionValue
+// If TAG conversionValue is not provided, don't add it to postBody
 if (conversionCurrency !== "" && conversionAmount !== "") {
   postBody.conversionValue = conversionValue;
+} else if (conversionCurrency === "" && conversionAmount === "" && data.conversionValue) {
+  if (typeof data.conversionValue === 'string' && data.conversionValue.trim() !== '') {
+    let parsedConversionValue = JSON.parse(data.conversionValue);
+    if (parsedConversionValue && typeof parsedConversionValue === 'object') {
+      postBody.conversionValue = parsedConversionValue;
+    } else {
+      logToConsole("Error: conversionValue should be a valid JSON object.");
+    }
+  }
 }
 
 // Validate user data before sending conversion event
