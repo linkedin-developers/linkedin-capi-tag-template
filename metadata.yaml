@@ -3,8 +3,10 @@ documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integration
 versions:
   # Latest version
   - sha: ca4b0670e0b73e8cbbc290b17f4d7a1f24289453
-    changeNotes: Added data validation. 
+    changeNotes: Updated LinkedIn API version to May 2024. 
   # Older versions
+  - sha: ca4b0670e0b73e8cbbc290b17f4d7a1f24289453
+    changeNotes: Added data validation.
   - sha: 50bd1bb6d4e4b307d1c9b3a2d99bd2a9adb9273f
     changeNotes: Updated variable schema.  
   - sha: e04fc1e88707dd96edc9fef5634b1d27916349e4
