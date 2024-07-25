@@ -2,7 +2,7 @@ homepage: "https://www.linkedin.com"
 documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api"
 versions:
   # Latest version
-  - sha: ca4b0670e0b73e8cbbc290b17f4d7a1f24289453
+  - sha: c02bda7ead43510d6cba5e9a2ff2d94f7f21883d
     changeNotes: Updated LinkedIn API version to May 2024. 
   # Older versions
   - sha: ca4b0670e0b73e8cbbc290b17f4d7a1f24289453
