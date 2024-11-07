@@ -11,7 +11,7 @@ ___INFO___
 {
   "type": "TAG",
   "id": "cvt_temp_public_id",
-  "version": 1.0.2,
+  "version": 1.0.3,
   "securityGroups": [],
   "displayName": "LinkedIn | CAPI Tag Template",
   "categories": [
@@ -79,7 +79,7 @@ const logToConsole = require('logToConsole');
 const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/"; 
 
 // API_version Indicates the API version that is being used. Each version is supported for 1 year following it's release. 
-const linkedin_api_version = '202405';
+const linkedin_api_version = '202410';
 
 // The URN of the conversion_rule. Format of URN follows syntax: urn:lla:llaPartnerConversion:123, where 123 is the ID of the conversion_rule
 
