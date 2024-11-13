@@ -11,7 +11,7 @@ ___INFO___
 {
   "type": "TAG",
   "id": "cvt_temp_public_id",
-  "version": 1.0.3,
+  "version": 1,
   "securityGroups": [],
   "displayName": "LinkedIn | CAPI Tag Template",
   "categories": [
@@ -81,9 +81,6 @@ const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/";
 // API_version Indicates the API version that is being used. Each version is supported for 1 year following it's release. 
 const linkedin_api_version = '202410';
 
-// Version of the GTM Tag Template
-const gtmTemplateVersion = '1.0.3';
-
 // The URN of the conversion_rule. Format of URN follows syntax: urn:lla:llaPartnerConversion:123, where 123 is the ID of the conversion_rule
 
 // Dynamic variables
@@ -135,7 +132,8 @@ conversion_event.userData = {userIds: [{'idType': 'SHA256_EMAIL',
                                         'title': userJobTitle,
                                         'companyName': userCompanyName,
                                         'countryCode': userAddressData.country || ''},
-                                        lead: 'urn:li:leadGenFormResponse:' + leadGenID
+
+                              lead: 'urn:li:leadGenFormResponse:' + leadGenID
                             };
 
 
@@ -154,8 +152,7 @@ var postBody ={'conversion': conversion_rule_urn,
               'conversionHappenedAt':conversion_event.conversion_happened_at,
               'conversionValue': conversionValue,
               'eventId': eventID, 
-               'user' : conversion_event.userData,
-               'gtmTemplateVersion' : gtmTemplateVersion
+               'user' : conversion_event.userData
               }; 
 
 // perform validation check on presence of 1/4 of the required IDs. If at least 1 ID is present, make the API call. If no IDs are present, log the warning and no call is made
