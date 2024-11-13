@@ -2,9 +2,11 @@ homepage: "https://www.linkedin.com"
 documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api"
 versions:
   # Latest version
+  - sha: 77a1452bd2a53a0e90f2bd26928f847f86d27130
+    changeNotes: Fixed Parsing errors by changing the Version number and removed the gtmTemplateVersion parameer that was causing validation errors, formatted lead code section. 
+  # Older versions
   - sha: 016b81ae79e2fdf033bbaebfd7dac7f35fd5eca5
     changeNotes: Updated LinkedIn API version to Oct 2024. 
-  # Older versions
   - sha: c02bda7ead43510d6cba5e9a2ff2d94f7f21883d
     changeNotes: Updated LinkedIn API version to May 2024. 
   - sha: ca4b0670e0b73e8cbbc290b17f4d7a1f24289453
