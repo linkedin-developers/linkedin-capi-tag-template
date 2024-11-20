@@ -3,10 +3,7 @@ documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integration
 versions:
   # Latest version
   - sha: 77a1452bd2a53a0e90f2bd26928f847f86d27130
-    changeNotes: |2
-    Fixed parsing errors by updating the Version number and removed the gtmTemplateVersion parameter that was causing validation errors. 
-    Updated LinkedIn API version to 202410.
-    Added support for lead gen id as user identifier.
+    changeNotes: Fixed Parsing errors by changing the Version number and removed the gtmTemplateVersion parameer that was causing validation errors, formatted lead code section. 
   # Older versions
   - sha: 016b81ae79e2fdf033bbaebfd7dac7f35fd5eca5
     changeNotes: Updated LinkedIn API version to Oct 2024. 
@@ -17,4 +14,4 @@ versions:
   - sha: 50bd1bb6d4e4b307d1c9b3a2d99bd2a9adb9273f
     changeNotes: Updated variable schema.  
   - sha: e04fc1e88707dd96edc9fef5634b1d27916349e4
-    changeNotes: Initial release. 
+    changeNotes: Initial release.
