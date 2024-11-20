@@ -3,7 +3,7 @@ documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integration
 versions:
   # Latest version
   - sha: 77a1452bd2a53a0e90f2bd26928f847f86d27130
-    changeNotes: Fixed Parsing errors by changing the Version number and removed the gtmTemplateVersion parameer that was causing validation errors, formatted lead code section. 
+    changeNotes: Fixed parsing errors by updating the Version number and removed the gtmTemplateVersion parameter that was causing validation errors. 
   # Older versions
   - sha: 016b81ae79e2fdf033bbaebfd7dac7f35fd5eca5
     changeNotes: Updated LinkedIn API version to Oct 2024. 
