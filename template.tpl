@@ -97,10 +97,10 @@ const conversion_event = {};
 //timestamp of the conversion event. needs to be passed in miliseconds or API will reject
 conversion_event.conversion_happened_at = (eventModel.conversion_happened_at != null) ? makeNumber(eventModel.conversion_happened_at) : ((eventModel.event_time != null) ? makeNumber(eventModel.event_time) :(Math.round(getTimestampMillis()))); 
 
-// Pull user data if available: 
-const userAddressData = (eventModel.user_data != null && eventModel.user_data.address != null) ? eventModel.user_data.address : {};
+// Pull user data if available:
+const userAddressData = (eventModel.user_data != null && eventModel.user_data.address != null) ? (eventModel.user_data.address[0] ? eventModel.user_data.address[0] : eventModel.user_data.address):{};
 
-const userEmailSHA256 = (eventModel.user_data != null && eventModel.user_data.sha256_email_address != null) ? eventModel.user_data.sha256_email_address : ''; 
+const userEmailSHA256 = (eventModel.user_data != null && eventModel.user_data.sha256_email_address != null) ? eventModel.user_data.sha256_email_address : '';
 
 const userFirstName = userAddressData.first_name || '';
 const userLastName = userAddressData.last_name || '';
