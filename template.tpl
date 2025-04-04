@@ -56,6 +56,151 @@ ___TEMPLATE_PARAMETERS___
     "name": "conversionValue",
     "displayName": "Conversion Value - The monetary value for this conversion. It contains “currencyCode” in ISO format (e.g. “USD”) and the “amount” value of the conversion in decimal string. (e.g. “100.05”). Advertisers can set conversion values dynamically here or set a fix value. ie: \u0027{\"currencyCode\": \"USD\", \"amount\": \"50.0\"}\u0027 *Optional*",
     "simpleValueType": true
+  },
+  {
+    "type": "GROUP",
+    "name": "userIds Group",
+    "displayName": "User Ids Override",
+    "groupStyle": "ZIPPY_CLOSED",
+    "subParams": [
+      {
+        "type": "LABEL",
+        "name": "userIdslabel",
+        "displayName": "Tag will attempt to parse cookie/event data but you can provide those parameter explicitly, at least one identifier is needed for a successful request."
+      },
+      {
+        "type": "SIMPLE_TABLE",
+        "name": "userIds",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "",
+            "displayName": "Property Name",
+            "name": "name",
+            "type": "SELECT",
+            "selectItems": [
+              {
+                "value": "email",
+                "displayValue": "SHA256_EMAIL"
+              },
+              {
+                "value": "linkedinFirstPartyId",
+                "displayValue": "LINKEDIN_FIRST_PARTY_ADS_TRACKING_UUID"
+              },
+              {
+                "value": "acxiomID",
+                "displayValue": "ACXIOM ID"
+              },
+              {
+                "value": "moatID",
+                "displayValue": "ORACLE_MOAT_ID"
+              }
+            ]
+          },
+          {
+            "defaultValue": "",
+            "displayName": "Property Value",
+            "name": "value",
+            "type": "TEXT"
+          }
+        ],
+        "newRowButtonText": "Add Property"
+      }
+    ]
+  },
+  {
+    "type": "GROUP",
+    "name": "userInfoGroup",
+    "displayName": "User Info Override",
+    "groupStyle": "ZIPPY_CLOSED",
+    "subParams": [
+      {
+        "type": "SIMPLE_TABLE",
+        "name": "userInfo",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "",
+            "displayName": "Property Name",
+            "name": "name",
+            "type": "SELECT",
+            "selectItems": [
+              {
+                "value": "firstName",
+                "displayValue": "First Name"
+              },
+              {
+                "value": "lastName",
+                "displayValue": "Last Name"
+              },
+              {
+                "value": "jobTitle",
+                "displayValue": "Job Title"
+              },
+              {
+                "value": "companyName",
+                "displayValue": "Company Name"
+              },
+              {
+                "value": "countryCode",
+                "displayValue": "Country Code"
+              }
+            ]
+          },
+          {
+            "defaultValue": "",
+            "displayName": "Property Value",
+            "name": "value",
+            "type": "TEXT"
+          }
+        ],
+        "newRowButtonText": "Add Property"
+      }
+    ]
+  },
+  {
+    "type": "GROUP",
+    "name": "eventDataGroup",
+    "displayName": "Event Data Override",
+    "groupStyle": "ZIPPY_CLOSED",
+    "subParams": [
+      {
+        "type": "SIMPLE_TABLE",
+        "name": "eventData",
+        "simpleTableColumns": [
+          {
+            "defaultValue": "",
+            "displayName": "Property Name",
+            "name": "name",
+            "type": "SELECT",
+            "selectItems": [
+              {
+                "value": "conversionHappenedAt",
+                "displayValue": "Conversion Happened At"
+              },
+              {
+                "value": "currency",
+                "displayValue": "Currency"
+              },
+              {
+                "value": "amount",
+                "displayValue": "Amount"
+              },
+              {
+                "value": "eventId",
+                "displayValue": "Event ID"
+              }
+            ]
+          },
+          {
+            "defaultValue": "",
+            "displayName": "Property Value",
+            "name": "value",
+            "type": "TEXT"
+          }
+        ],
+        "newRowButtonText": "Add property",
+        "valueValidators": []
+      }
+    ]
   }
 ]
 
@@ -65,142 +210,309 @@ ___SANDBOXED_JS_FOR_SERVER___
 // LinkedIn Conversion API documentation: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api
 
 // Sandbox Javascript API imports
-const getAllEventData = require('getAllEventData');
 const sendHttpRequest = require('sendHttpRequest');
 const getTimestampMillis = require('getTimestampMillis');
+const getAllEventData = require('getAllEventData');
+const getEventData = require('getEventData');
 const Math = require('Math');
 const JSON = require('JSON');
 const makeString = require('makeString');
 const makeNumber = require('makeNumber');
 const logToConsole = require('logToConsole');
-
+const sha256Sync = require('sha256Sync');
+const getType = require('getType');
+const encodeUriComponent = require('encodeUriComponent');
+const makeTableMap = require('makeTableMap');
 
 // ** CONSTANTS **
-const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/"; 
+const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/";
 
-// API_version Indicates the API version that is being used. Each version is supported for 1 year following it's release. 
+// API_version Indicates the API version that is being used. Each version is supported for 1 year following it's release.
 const linkedin_api_version = '202410';
 
-// The URN of the conversion_rule. Format of URN follows syntax: urn:lla:llaPartnerConversion:123, where 123 is the ID of the conversion_rule
-
 // Dynamic variables
-const eventModel = getAllEventData(); 
-const event_time = eventModel.event_time;
+const eventModel = getAllEventData();
+const user_data = eventModel.user_data || {};
+const user_address = user_data.address || {};
+const eventDataOverride = makeOverrideTableMap(data.eventData);
+const userIdsOverride = makeOverrideTableMap(data.userIds);
+const userInfoOverride = makeOverrideTableMap(data.userInfo);
 
-//const conversionRuleUrn = 'urn:lla:llaPartnerConversion:' + data.conversionRuleUrn;
-const conversion_rule_id = (eventModel.conversion_rule_id != null) ? eventModel.conversion_rule_id : data.conversionRuleUrn; 
+const conversion_rule_id = eventModel.conversion_rule_id || data.conversionRuleUrn;
 
-const conversion_rule_urn = 'urn:lla:llaPartnerConversion:' + conversion_rule_id; 
+const conversion_rule_urn = 'urn:lla:llaPartnerConversion:' + conversion_rule_id;
 
-// Building final conversion_event object
-const conversion_event = {};
-//timestamp of the conversion event. needs to be passed in miliseconds or API will reject
-conversion_event.conversion_happened_at = (eventModel.conversion_happened_at != null) ? makeNumber(eventModel.conversion_happened_at) : ((eventModel.event_time != null) ? makeNumber(eventModel.event_time) :(Math.round(getTimestampMillis()))); 
+// Build conversion_event object
+const conversion_event = {
+    conversion_happened_at: makeNumber(eventModel.conversion_happened_at || eventModel.event_time) || Math.round(getTimestampMillis()),
+    userData: {
+        userIds: getUserIds()
+    }
+};
 
-// Pull user data if available: 
-const userAddressData = (eventModel.user_data != null && eventModel.user_data.address != null) ? eventModel.user_data.address : {};
+// Add lead ID if available
+// Add lead ID if set in user_data
+if (eventModel.user_data != null && eventModel.user_data.leadID != null) {
+const leadId = eventModel.user_data.leadID;
+const leadIdUrn = (leadId !== "") ? 'urn:li:leadGenFormResponse:' + leadId : '';
+conversion_event.userData.lead = leadIdUrn;
+}
 
-const userEmailSHA256 = (eventModel.user_data != null && eventModel.user_data.sha256_email_address != null) ? eventModel.user_data.sha256_email_address : ''; 
+// Fetch event ID and conversion values
+const eventID = eventDataOverride.eventId || data.eventId || eventModel.eventId || eventModel.event_id || '';
+const conversionCurrency = eventDataOverride.currency || eventModel.currency || '';
+const conversionAmount = eventDataOverride.amount || eventModel.value || '0';
+const conversionValue = JSON.parse(data.conversionValue) || {
+    currencyCode: conversionCurrency,
+    amount: conversionAmount.toString()
+};
 
-const userFirstName = userAddressData.first_name || '';
-const userLastName = userAddressData.last_name || '';
+// Include user information if valid
 
-// The following userData attributes are not standard. If they have been configured, the data will be passed to LinkedIn. If they have not been configured, an empty string will be passed instead. 
-const userCompanyName = (eventModel.user_data != null && eventModel.user_data.companyName != null) ? eventModel.user_data.companyName : '';
-const userJobTitle = (eventModel.user_data != null && eventModel.user_data.jobTitle != null) ? eventModel.user_data.jobTitle : '';
-const userLinkedinFirstPartyID = (eventModel.user_data != null && eventModel.user_data.linkedinFirstPartyId != null) ? eventModel.user_data.linkedinFirstPartyId : '';
-const userAcxionID = (eventModel.user_data != null && eventModel.user_data.acxiomID != null) ? eventModel.user_data.acxiomID : '';
-const userMoatID = (eventModel.user_data != null && eventModel.user_data.moatID != null) ? eventModel.user_data.moatID : '';
-//LeadGenFormResponseUrn, generated when user submit LinkedIn lead-gen form, can be retrieved from the Lead Sync API
-const leadGenID = (eventModel.user_data != null && eventModel.user_data.leadID != null) ? eventModel.user_data.leadID : '0';
-
-// eventId is an optional ID generated by you to indicate a unique value for each event. 
-const eventID = (eventModel.event_id != null) ? eventModel.event_id : ""; 
-
-// Setting the user data that will be passed to LinkedIn
-conversion_event.userData = {userIds: [{'idType': 'SHA256_EMAIL',
-                                        'idValue': userEmailSHA256},      
-                                       {'idType': 'LINKEDIN_FIRST_PARTY_ADS_TRACKING_UUID',
-                                       'idValue': userLinkedinFirstPartyID},
-                                       {'idType': 'ACXIOM_ID',
-                                       'idValue': userAcxionID},
-                                       {'idType': 'ORACLE_MOAT_ID',
-                                      'idValue': userMoatID}],
-                             
-                             userInfo: {'firstName': userFirstName,
-                                        'lastName': userLastName,
-                                        'title': userJobTitle,
-                                        'companyName': userCompanyName,
-                                        'countryCode': userAddressData.country || ''},
-
-                              lead: 'urn:li:leadGenFormResponse:' + leadGenID
-                            };
-
-
-const conversionCurrency = (eventModel.currency != null) ? eventModel.currency : "";
-
-const conversionAmmount = (eventModel.value != null) ? eventModel.value : "";
-
-const conversionValue =  JSON.parse(data.conversionValue) || {"currencyCode": conversionCurrency, "amount": conversionAmmount.toString()}; 
+const userDataInfo = getUserInfo();
+if (userDataInfo && userDataInfo.firstName && userDataInfo.lastName) {
+conversion_event.userData.userInfo = userDataInfo;
+}
 
 // Preparing the HTTP POST call to LinkedIn CAPI endpoint
-const requestHeaders = {'content-type': 'application/json',
-                       'Authorization': 'Bearer ' + data.apiAccessToken,
-                       'LinkedIn-Version': linkedin_api_version};
+const requestHeaders = {
+    'content-type': 'application/json',
+    'Authorization': 'Bearer ' + data.apiAccessToken,
+    'LinkedIn-Version': linkedin_api_version
+};
 
-var postBody ={'conversion': conversion_rule_urn,
-              'conversionHappenedAt':conversion_event.conversion_happened_at,
-              'conversionValue': conversionValue,
-              'eventId': eventID, 
-               'user' : conversion_event.userData
-              }; 
+var postBody = {
+    conversion: conversion_rule_urn,
+    conversionHappenedAt: conversion_event.conversion_happened_at,
+    eventId: eventID,
+    user: conversion_event.userData
+};
+if (conversionValue.currencyCode !== "" && conversionValue.amount > 0) {
+    postBody.conversionValue = conversionValue;
+}
 
 // perform validation check on presence of 1/4 of the required IDs. If at least 1 ID is present, make the API call. If no IDs are present, log the warning and no call is made
-if (validateUserData()){
-  sendConversionToLinkedIn();
+if (validateUserData()) {
+    sendConversionToLinkedIn();
 } else {
-  logToConsole('No conversion event was sent to CAPI. You must set 1 out of the 4 acceptable IDs (Acxiom, Oracle, SHA256_Email or LinkedIn_UUID) on eventModel.user_data to resolve this issue or make certain to send both firstName and lastName under eventModel.user_data.address.first_name and eventModel.user_data.address.last_name.');
+    logToConsole('No conversion event was sent to CAPI. You must set 1 out of the 4 acceptable IDs (Acxiom, Oracle, SHA256_Email, or LinkedIn_UUID) or provide firstName & lastName under eventModel.user_data.address.');
 }
 
 function validateUserData() {
-  var data_is_valid_flag = false; 
-  const userIDs = conversion_event.userData.userIds;
+    var data_is_valid_flag = false;
+    const userIDs = conversion_event.userData.userIds;
 
-  for (var user_id of userIDs){ 
-    if (user_id.idValue != ""){
-      // means that the idValue is present for one of the required ID feilds
-      data_is_valid_flag = true;
-      break;
-    }   
-  }
-  // if the flag is false, check for first name last name. if both present, 
-  // flip flag to true, send the API call
-  if (data_is_valid_flag == false){
-    if (conversion_event.userData.userInfo.firstName != "" && conversion_event.userData.userInfo.lastName != ""){
-      data_is_valid_flag = true;
+    for (var user_id of userIDs) {
+        if (user_id.idValue != "") {
+            // means that the idValue is present for one of the required ID feilds
+            data_is_valid_flag = true;
+            break;
+        }
     }
-  }
-  
-  
-  return data_is_valid_flag;
+    // if the flag is false, check for first name last name. if both present,
+    // flip flag to true, send the API call
+    if (data_is_valid_flag == false) {
+        if (
+            conversion_event.userData &&
+            conversion_event.userData.userInfo &&
+            conversion_event.userData.userInfo.firstName &&
+            conversion_event.userData.userInfo.lastName
+        ) {
+            data_is_valid_flag = true;
+        }
+    }
+    return data_is_valid_flag;
 }
 
+function makeOverrideTableMap(values) {
+    return makeTableMap(values || [], 'name', 'value') || {};
+}
+
+function getUserIds() {
+    const userIds = [{
+            idType: 'SHA256_EMAIL',
+            idValue: hashData(getUserEmail())
+        },
+        {
+            idType: 'ACXIOM_ID',
+            idValue: getAcxiomId()
+        },
+        {
+            idType: 'ORACLE_MOAT_ID',
+            idValue: getOracleMoatId()
+        },
+        {
+            idType: 'LINKEDIN_FIRST_PARTY_ADS_TRACKING_UUID',
+            idValue: getFirstPartyAdsTrackingUuid()
+        }
+    ];
+
+    return userIds.filter((userId) => userId.idValue);
+}
+
+function getUserEmail() {
+    const hashedEmail = getUserDataHashedEmail();
+    if (hashedEmail) return hashedEmail; // Prioritize hashed email if available
+
+    return (
+        (userIdsOverride.email ||
+            eventModel.email ||
+            user_data.email_address ||
+            user_data.email ||
+            '')
+        .toLowerCase()
+    );
+}
+
+function getUserDataHashedEmail() {
+    return user_data && user_data.sha256_email_address ? user_data.sha256_email_address : '';
+}
+
+function getAcxiomId() {
+    return userIdsOverride.acxiomID || user_data.acxiomID || '';
+}
+
+function getOracleMoatId() {
+    return userIdsOverride.moatID || user_data.moatID || '';
+}
+
+function getFirstPartyAdsTrackingUuid() {
+    // Check if eventModel.user_data exists before accessing its properties
+    const eventLinkedinFirstPartyID =
+        eventModel.user_data && eventModel.user_data.linkedinFirstPartyId ? eventModel.user_data.linkedinFirstPartyId : '';
+
+    // Fallback: Try fetching from user properties
+    const ga4UserPropPrefix = 'x-ga-mp2-user_properties.';
+    const userLinkedinFirstPartyID = getEventData(ga4UserPropPrefix + 'linkedinFirstPartyId') || '';
+
+    // Return the first available ID
+    return eventLinkedinFirstPartyID || userLinkedinFirstPartyID || '';
+}
+
+function getUserFirstName() {
+    return (
+        userInfoOverride.firstName ||
+        eventModel.firstName ||
+        eventModel.FirstName || // Handles possible inconsistent casing
+        eventModel.nameFirst ||
+        eventModel.first_name ||
+        user_data.first_name ||
+        user_address.first_name ||
+        ''
+    );
+}
+
+function getUserLastName() {
+    return (
+        userInfoOverride.lastName ||
+        eventModel.lastName ||
+        eventModel.LastName || // Handles possible inconsistent casing
+        eventModel.nameLast ||
+        eventModel.last_name ||
+        user_data.last_name ||
+        user_address.last_name ||
+        ''
+    );
+}
+
+function getUserJobTitle() {
+    return (
+        userInfoOverride.jobTitle ||
+        eventModel.jobTitle || // Handles possible inconsistent casing
+        user_data.jobTitle ||
+        user_data.job_title ||
+        ''
+    );
+}
+
+function getUserCompanyName() {
+    return (
+        userInfoOverride.companyName ||
+        eventModel.companyName || // Handles possible inconsistent casing
+        eventModel.company_name ||
+        user_data.companyName ||
+        user_data.company_name ||
+        ''
+    );
+}
+
+function getUserCountryCode() {
+    return (
+        userInfoOverride.countryCode ||
+        eventModel.countryCode || // Handles possible inconsistent casing
+        eventModel.country ||
+        user_data.country ||
+        user_address.country ||
+        ''
+    );
+}
+
+function getUserInfo() {
+    return {
+        firstName: getUserFirstName(),
+        lastName: getUserLastName(),
+        title: getUserJobTitle(),
+        companyName: getUserCompanyName(),
+        countryCode: getUserCountryCode()
+    };
+}
+
+function isHashed(value) {
+    if (!value) {
+        return false;
+    }
+
+    return makeString(value).match('^[A-Fa-f0-9]{64}$') !== null;
+}
+
+function hashData(value) {
+    if (!value) {
+        return value;
+    }
+
+    const type = getType(value);
+
+    if (type === 'undefined' || value === 'undefined') {
+        return undefined;
+    }
+
+    if (type === 'object' || type === 'array') {
+        return value;
+    }
+
+    if (isHashed(value)) {
+        return value;
+    }
+
+    value = makeString(value).trim().toLowerCase();
+
+    return sha256Sync(value, {
+        outputEncoding: 'hex'
+    });
+}
+
+function enc(data) {
+    return encodeUriComponent(data || '');
+}
+
+function makeOverrideTableMap(values) {
+    return makeTableMap(values || [], 'name', 'value') || {};
+}
 
 function sendConversionToLinkedIn() {
-  // Sending the API Call
-  sendHttpRequest(CONV_API_ENDPOINT, { 
-    headers: requestHeaders,
-    method: 'POST',
-    //timeout: 500,
-  }, JSON.stringify(postBody)).then((result) => {
-    if (result.statusCode >= 200 && result.statusCode < 300) {
-      data.gtmOnSuccess();
-    } else {
-      data.gtmOnFailure();
-    }
-  });
+    // Sending the API Call
+    sendHttpRequest(CONV_API_ENDPOINT, {
+        headers: requestHeaders,
+        method: 'POST',
+        //timeout: 500,
+    }, JSON.stringify(postBody)).then((result) => {
+        if (result.statusCode >= 200 && result.statusCode < 300) {
+            data.gtmOnSuccess();
+        } else {
+            data.gtmOnFailure();
+        }
+    });
 }
-
 
 ___SERVER_PERMISSIONS___
 
@@ -279,3 +591,5 @@ scenarios: []
 ___NOTES___
 
 Created on 9/27/2023, 11:40:00 AM
+
+
