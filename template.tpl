@@ -210,6 +210,7 @@ ___SANDBOXED_JS_FOR_SERVER___
 // LinkedIn Conversion API documentation: https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api
 
 // Sandbox Javascript API imports
+// Required GTM Server-Side functions/modules
 const sendHttpRequest = require('sendHttpRequest');
 const getTimestampMillis = require('getTimestampMillis');
 const getAllEventData = require('getAllEventData');
@@ -224,13 +225,11 @@ const getType = require('getType');
 const encodeUriComponent = require('encodeUriComponent');
 const makeTableMap = require('makeTableMap');
 
-// ** CONSTANTS **
+// Constants
 const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/";
+const linkedin_api_version = '202503'; // LinkedIn API version (valid for 1 year from release)
 
-// API_version Indicates the API version that is being used. Each version is supported for 1 year following it's release.
-const linkedin_api_version = '202410';
-
-// Dynamic variables
+// Input / Event Data Setup
 const eventModel = getAllEventData();
 const user_data = eventModel.user_data || {};
 const user_address = user_data.address || {};
@@ -238,11 +237,12 @@ const eventDataOverride = makeOverrideTableMap(data.eventData);
 const userIdsOverride = makeOverrideTableMap(data.userIds);
 const userInfoOverride = makeOverrideTableMap(data.userInfo);
 
+// Conversion Rule URN Construction
 const conversion_rule_id = eventModel.conversion_rule_id || data.conversionRuleUrn;
-
 const conversion_rule_urn = 'urn:lla:llaPartnerConversion:' + conversion_rule_id;
 
-// Build conversion_event object
+// Build conversion event payload
+//Check if the conversion Happened time is provided by the user, if not then use the current timestamp.
 const conversion_event = {
     conversion_happened_at: makeNumber(eventModel.conversion_happened_at || eventModel.event_time) || Math.round(getTimestampMillis()),
     userData: {
@@ -250,15 +250,14 @@ const conversion_event = {
     }
 };
 
-// Add lead ID if available
-// Add lead ID if set in user_data
+// Add LinkedIn LeadGen lead ID if available
 if (eventModel.user_data != null && eventModel.user_data.leadID != null) {
-const leadId = eventModel.user_data.leadID;
-const leadIdUrn = (leadId !== "") ? 'urn:li:leadGenFormResponse:' + leadId : '';
-conversion_event.userData.lead = leadIdUrn;
+    const leadId = eventModel.user_data.leadID;
+    const leadIdUrn = leadId !== "" ? 'urn:li:leadGenFormResponse:' + leadId : '';
+    conversion_event.userData.lead = leadIdUrn;
 }
 
-// Fetch event ID and conversion values
+// Conversion metadata
 const eventID = eventDataOverride.eventId || data.eventId || eventModel.eventId || eventModel.event_id || '';
 const conversionCurrency = eventDataOverride.currency || eventModel.currency || '';
 const conversionAmount = eventDataOverride.amount || eventModel.value || '0';
@@ -267,67 +266,66 @@ const conversionValue = JSON.parse(data.conversionValue) || {
     amount: conversionAmount.toString()
 };
 
-// Include user information if valid
-
+// Add user info if available
 const userDataInfo = getUserInfo();
 if (userDataInfo && userDataInfo.firstName && userDataInfo.lastName) {
-conversion_event.userData.userInfo = userDataInfo;
+    conversion_event.userData.userInfo = userDataInfo;
 }
 
-// Preparing the HTTP POST call to LinkedIn CAPI endpoint
+// HTTP request headers
 const requestHeaders = {
     'content-type': 'application/json',
     'Authorization': 'Bearer ' + data.apiAccessToken,
     'LinkedIn-Version': linkedin_api_version
 };
 
-var postBody = {
+// Construct request payload
+let postBody = {
     conversion: conversion_rule_urn,
     conversionHappenedAt: conversion_event.conversion_happened_at,
     eventId: eventID,
     user: conversion_event.userData
 };
+
 if (conversionValue.currencyCode !== "" && conversionValue.amount > 0) {
     postBody.conversionValue = conversionValue;
 }
 
-// perform validation check on presence of 1/4 of the required IDs. If at least 1 ID is present, make the API call. If no IDs are present, log the warning and no call is made
+// Main validation + send logic
 if (validateUserData()) {
     sendConversionToLinkedIn();
 } else {
     logToConsole('No conversion event was sent to CAPI. You must set 1 out of the 4 acceptable IDs (Acxiom, Oracle, SHA256_Email, or LinkedIn_UUID) or provide firstName & lastName under eventModel.user_data.address.');
 }
 
+// Validates presence of at least one required ID or name
 function validateUserData() {
-    var data_is_valid_flag = false;
+    let data_is_valid_flag = false;
     const userIDs = conversion_event.userData.userIds;
 
-    for (var user_id of userIDs) {
-        if (user_id.idValue != "") {
-            // means that the idValue is present for one of the required ID feilds
+    for (let user_id of userIDs) {
+        if (user_id.idValue !== "") {
             data_is_valid_flag = true;
             break;
         }
     }
-    // if the flag is false, check for first name last name. if both present,
-    // flip flag to true, send the API call
-    if (data_is_valid_flag == false) {
-        if (
-            conversion_event.userData &&
-            conversion_event.userData.userInfo &&
-            conversion_event.userData.userInfo.firstName &&
-            conversion_event.userData.userInfo.lastName
-        ) {
+
+    if (!data_is_valid_flag) {
+        const userInfo = conversion_event.userData.userInfo;
+        if (userInfo && userInfo.firstName && userInfo.lastName) {
             data_is_valid_flag = true;
         }
     }
+
     return data_is_valid_flag;
 }
 
+// Converts array of overrides into map
 function makeOverrideTableMap(values) {
     return makeTableMap(values || [], 'name', 'value') || {};
 }
 
+// Gathers available user IDs
 function getUserIds() {
     const userIds = [{
             idType: 'SHA256_EMAIL',
@@ -347,12 +345,13 @@ function getUserIds() {
         }
     ];
 
-    return userIds.filter((userId) => userId.idValue);
+    return userIds.filter(userId => userId.idValue);
 }
 
+// Gets email, prioritizing hashed version
 function getUserEmail() {
     const hashedEmail = getUserDataHashedEmail();
-    if (hashedEmail) return hashedEmail; // Prioritize hashed email if available
+    if (hashedEmail) return hashedEmail;
 
     return (
         (userIdsOverride.email ||
@@ -376,24 +375,21 @@ function getOracleMoatId() {
     return userIdsOverride.moatID || user_data.moatID || '';
 }
 
+// Gets LinkedIn first-party UUID
 function getFirstPartyAdsTrackingUuid() {
-    // Check if eventModel.user_data exists before accessing its properties
     const eventLinkedinFirstPartyID =
         eventModel.user_data && eventModel.user_data.linkedinFirstPartyId ? eventModel.user_data.linkedinFirstPartyId : '';
-
-    // Fallback: Try fetching from user properties
     const ga4UserPropPrefix = 'x-ga-mp2-user_properties.';
     const userLinkedinFirstPartyID = getEventData(ga4UserPropPrefix + 'linkedinFirstPartyId') || '';
-
-    // Return the first available ID
     return eventLinkedinFirstPartyID || userLinkedinFirstPartyID || '';
 }
 
+// Fallback lookup for user information
 function getUserFirstName() {
     return (
         userInfoOverride.firstName ||
         eventModel.firstName ||
-        eventModel.FirstName || // Handles possible inconsistent casing
+        eventModel.FirstName ||
         eventModel.nameFirst ||
         eventModel.first_name ||
         user_data.first_name ||
@@ -406,7 +402,7 @@ function getUserLastName() {
     return (
         userInfoOverride.lastName ||
         eventModel.lastName ||
-        eventModel.LastName || // Handles possible inconsistent casing
+        eventModel.LastName ||
         eventModel.nameLast ||
         eventModel.last_name ||
         user_data.last_name ||
@@ -418,7 +414,7 @@ function getUserLastName() {
 function getUserJobTitle() {
     return (
         userInfoOverride.jobTitle ||
-        eventModel.jobTitle || // Handles possible inconsistent casing
+        eventModel.jobTitle ||
         user_data.jobTitle ||
         user_data.job_title ||
         ''
@@ -428,7 +424,7 @@ function getUserJobTitle() {
 function getUserCompanyName() {
     return (
         userInfoOverride.companyName ||
-        eventModel.companyName || // Handles possible inconsistent casing
+        eventModel.companyName ||
         eventModel.company_name ||
         user_data.companyName ||
         user_data.company_name ||
@@ -439,7 +435,7 @@ function getUserCompanyName() {
 function getUserCountryCode() {
     return (
         userInfoOverride.countryCode ||
-        eventModel.countryCode || // Handles possible inconsistent casing
+        eventModel.countryCode ||
         eventModel.country ||
         user_data.country ||
         user_address.country ||
@@ -447,6 +443,7 @@ function getUserCountryCode() {
     );
 }
 
+// Builds userInfo object
 function getUserInfo() {
     return {
         firstName: getUserFirstName(),
@@ -457,55 +454,38 @@ function getUserInfo() {
     };
 }
 
+// Check if a value is already a valid SHA256 hash
 function isHashed(value) {
-    if (!value) {
-        return false;
-    }
-
+    if (!value) return false;
     return makeString(value).match('^[A-Fa-f0-9]{64}$') !== null;
 }
 
+// Hashes non-object and non-array string values if not already hashed
 function hashData(value) {
-    if (!value) {
-        return value;
-    }
+    if (!value) return value;
 
     const type = getType(value);
-
-    if (type === 'undefined' || value === 'undefined') {
-        return undefined;
-    }
-
-    if (type === 'object' || type === 'array') {
-        return value;
-    }
-
-    if (isHashed(value)) {
-        return value;
-    }
+    if (type === 'undefined' || value === 'undefined') return undefined;
+    if (type === 'object' || type === 'array') return undefined;
+    if (isHashed(value)) return value;
 
     value = makeString(value).trim().toLowerCase();
-
     return sha256Sync(value, {
         outputEncoding: 'hex'
     });
 }
 
+// Encodes a string for URI safety
 function enc(data) {
     return encodeUriComponent(data || '');
 }
 
-function makeOverrideTableMap(values) {
-    return makeTableMap(values || [], 'name', 'value') || {};
-}
-
+// Send the API request to LinkedIn
 function sendConversionToLinkedIn() {
-    // Sending the API Call
     sendHttpRequest(CONV_API_ENDPOINT, {
         headers: requestHeaders,
         method: 'POST',
-        //timeout: 500,
-    }, JSON.stringify(postBody)).then((result) => {
+    }, JSON.stringify(postBody)).then(result => {
         if (result.statusCode >= 200 && result.statusCode < 300) {
             data.gtmOnSuccess();
         } else {
@@ -513,6 +493,7 @@ function sendConversionToLinkedIn() {
         }
     });
 }
+
 
 ___SERVER_PERMISSIONS___
 
