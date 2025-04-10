@@ -244,7 +244,7 @@ const conversion_rule_urn = 'urn:lla:llaPartnerConversion:' + conversion_rule_id
 // Build conversion event payload
 //Check if the conversion Happened time is provided by the user, if not then use the current timestamp.
 const conversion_event = {
-    conversion_happened_at: makeNumber(eventModel.conversion_happened_at || eventModel.event_time) || Math.round(getTimestampMillis()),
+    conversion_happened_at: makeNumber(eventDataOverride.conversionHappenedAt || eventModel.conversion_happened_at || eventModel.event_time) || Math.round(getTimestampMillis()),
     userData: {
         userIds: getUserIds()
     }
@@ -351,10 +351,10 @@ function getUserIds() {
 // Gets email, prioritizing hashed version
 function getUserEmail() {
     const hashedEmail = getUserDataHashedEmail();
-    if (hashedEmail) return hashedEmail;
 
     return (
         (userIdsOverride.email ||
+            hashedEmail ||
             eventModel.email ||
             user_data.email_address ||
             user_data.email ||
@@ -377,8 +377,22 @@ function getOracleMoatId() {
 
 // Gets LinkedIn first-party UUID
 function getFirstPartyAdsTrackingUuid() {
-    const eventLinkedinFirstPartyID =
-        eventModel.user_data && eventModel.user_data.linkedinFirstPartyId ? eventModel.user_data.linkedinFirstPartyId : '';
+    let eventLinkedinFirstPartyID = '';
+
+    if (
+      userIdsOverride &&
+      userIdsOverride.linkedinFirstPartyId &&
+      userIdsOverride.linkedinFirstPartyId.trim() !== ''
+    ) {
+      eventLinkedinFirstPartyID = userIdsOverride.linkedinFirstPartyId.trim();
+    } else if (
+      eventModel &&
+      eventModel.user_data &&
+      eventModel.user_data.linkedinFirstPartyId &&
+      eventModel.user_data.linkedinFirstPartyId.trim() !== ''
+    ) {
+      eventLinkedinFirstPartyID = eventModel.user_data.linkedinFirstPartyId.trim();
+    }
     const ga4UserPropPrefix = 'x-ga-mp2-user_properties.';
     const userLinkedinFirstPartyID = getEventData(ga4UserPropPrefix + 'linkedinFirstPartyId') || '';
     return eventLinkedinFirstPartyID || userLinkedinFirstPartyID || '';
