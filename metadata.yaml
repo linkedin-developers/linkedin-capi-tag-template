@@ -2,9 +2,11 @@ homepage: "https://www.linkedin.com"
 documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api"
 versions:
   # Latest version
+  - sha: 848b142273be22aa1c1d30ed5aee73153d6f41a0
+    changeNotes: Updates to the order of Hashed email, conversion happened at and first parry id override. 
+  # Older versions
   - sha: 9afc05a8a5fcf8c7acbb16833908bad7c1180350
     changeNotes: Added validation for Conversion currency and amount, updated API version to March 2025, added ability to override using UI fields for UserInfo, UserIds and Event Data. 
-  # Older versions
   - sha: 77a1452bd2a53a0e90f2bd26928f847f86d27130
     changeNotes: Fixed parsing errors by updating the Version number and removed the gtmTemplateVersion parameter that was causing validation errors. 
   - sha: 016b81ae79e2fdf033bbaebfd7dac7f35fd5eca5
