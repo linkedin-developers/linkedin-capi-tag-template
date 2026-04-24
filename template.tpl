@@ -69,6 +69,30 @@ ___TEMPLATE_PARAMETERS___
         "displayName": "Tag will attempt to parse cookie/event data but you can provide those parameter explicitly, at least one identifier is needed for a successful request."
       },
       {
+        "type": "TEXT",
+        "name": "userId_sha256email",
+        "displayName": "SHA256 Email - Pre-hashed SHA256 email address. *Optional*",
+        "simpleValueType": true
+      },
+      {
+        "type": "TEXT",
+        "name": "userId_lifatid",
+        "displayName": "LinkedIn First Party Ads Tracking UUID (li_fat_id). *Optional*",
+        "simpleValueType": true
+      },
+      {
+        "type": "TEXT",
+        "name": "userId_acxiomid",
+        "displayName": "Acxiom ID. *Optional*",
+        "simpleValueType": true
+      },
+      {
+        "type": "TEXT",
+        "name": "userId_moatid",
+        "displayName": "Oracle MOAT ID. *Optional*",
+        "simpleValueType": true
+      },
+      {
         "type": "SIMPLE_TABLE",
         "name": "userIds",
         "simpleTableColumns": [
@@ -354,7 +378,8 @@ function getUserEmail() {
     const hashedEmail = getUserDataHashedEmail();
 
     return (
-        (userIdsOverride.email ||
+        (data.userId_sha256email ||
+            userIdsOverride.email ||
             hashedEmail ||
             eventModel.email ||
             user_data.email_address ||
@@ -369,18 +394,20 @@ function getUserDataHashedEmail() {
 }
 
 function getAcxiomId() {
-    return userIdsOverride.acxiomID || user_data.acxiomID || '';
+    return data.userId_acxiomid || userIdsOverride.acxiomID || user_data.acxiomID || '';
 }
 
 function getOracleMoatId() {
-    return userIdsOverride.moatID || user_data.moatID || '';
+    return data.userId_moatid || userIdsOverride.moatID || user_data.moatID || '';
 }
 
 // Gets LinkedIn first-party UUID
 function getFirstPartyAdsTrackingUuid() {
     let eventLinkedinFirstPartyID = '';
 
-    if (
+    if (data.userId_lifatid && data.userId_lifatid.trim() !== '') {
+      eventLinkedinFirstPartyID = data.userId_lifatid.trim();
+    } else if (
       userIdsOverride &&
       userIdsOverride.linkedinFirstPartyId &&
       userIdsOverride.linkedinFirstPartyId.trim() !== ''
