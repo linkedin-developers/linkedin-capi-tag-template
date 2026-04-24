@@ -261,7 +261,7 @@ if (eventModel.user_data != null && eventModel.user_data.leadID != null) {
 const eventID = eventDataOverride.eventId || data.eventId || eventModel.eventId || eventModel.event_id || '';
 const conversionCurrency = eventDataOverride.currency || eventModel.currency || '';
 const conversionAmount = eventDataOverride.amount || eventModel.value || '0';
-const conversionValue = JSON.parse(data.conversionValue) || {
+const conversionValue = data.conversionValue ? JSON.parse(data.conversionValue) : {
     currencyCode: conversionCurrency,
     amount: conversionAmount.toString()
 };
