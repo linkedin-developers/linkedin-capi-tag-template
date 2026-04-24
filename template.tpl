@@ -348,19 +348,25 @@ function getUserIds() {
     return userIds.filter(userId => userId.idValue);
 }
 
-// Gets email, prioritizing hashed version
+// Gets email for SHA256_EMAIL identifier.
+// Returns an already-hashed value when available; otherwise returns the
+// plaintext email so the caller can hash it via hashData().
 function getUserEmail() {
-    const hashedEmail = getUserDataHashedEmail();
+    // 1. Explicit override from the tag UI
+    if (userIdsOverride.email) return userIdsOverride.email.toLowerCase();
 
-    return (
-        (userIdsOverride.email ||
-            hashedEmail ||
-            eventModel.email ||
-            user_data.email_address ||
-            user_data.email ||
-            '')
-        .toLowerCase()
-    );
+    // 2. Pre-hashed value supplied in user_data (already SHA-256)
+    const hashedEmail = getUserDataHashedEmail();
+    if (hashedEmail) return hashedEmail.toLowerCase();
+
+    // 3. Plaintext email — will be hashed by hashData() in getUserIds()
+    const plainEmail =
+        eventModel.email ||
+        user_data.email_address ||
+        user_data.email ||
+        '';
+
+    return plainEmail.toLowerCase();
 }
 
 function getUserDataHashedEmail() {
