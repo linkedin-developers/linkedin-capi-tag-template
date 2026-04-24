@@ -232,7 +232,8 @@ const linkedin_api_version = '202503'; // LinkedIn API version (valid for 1 year
 // Input / Event Data Setup
 const eventModel = getAllEventData();
 const user_data = eventModel.user_data || {};
-const user_address = user_data.address || {};
+const user_address_raw = user_data.address || {};
+const user_address = getType(user_address_raw) === 'array' ? (user_address_raw[0] || {}) : user_address_raw;
 const eventDataOverride = makeOverrideTableMap(data.eventData);
 const userIdsOverride = makeOverrideTableMap(data.userIds);
 const userInfoOverride = makeOverrideTableMap(data.userInfo);
