@@ -8,7 +8,7 @@ https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/
 https://developers.google.com/tag-platform/tag-manager/templates/gallery
 
 ## Add to workspace from Community Template Gallery
-https://tagmanager.google.com/gallery/#/owners/linkedin/templates/linkedin-gtm-community-template
+https://tagmanager.google.com/gallery/#/owners/linkedin-developers/templates/linkedin-capi-tag-template
 
 ## Template status in Community Template Gallery
 https://tagmanager.google.com/gallery/#/template/linkedin-developers/linkedin-capi-tag-template/status
