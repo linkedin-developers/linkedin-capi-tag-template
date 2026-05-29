@@ -2,9 +2,15 @@ homepage: "https://www.linkedin.com"
 documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api"
 versions:
   # Latest version
-  - sha: 848b142273be22aa1c1d30ed5aee73153d6f41a0
-    changeNotes: Updates to the order of Hashed email, conversion happened at and first parry id override. 
+  - sha: 2c6a74687af70f4f8605f0a0dd669366ab2bec52
+    changeNotes: Bump API version to 202605 and add support for PLAINTEXT_IP_ADDRESS and GOOGLE_AID as idType.
   # Older versions
+  - sha: 46a9dead072805ace42f6890848c55535e983d38
+    changeNotes: Fixed user_data.address extraction to handle array format.
+  - sha: f0fa1014f7122087d5e95762a41a03eaaddc23c1
+    changeNotes: Fixed guard against undefined conversionValue.
+  - sha: 848b142273be22aa1c1d30ed5aee73153d6f41a0
+    changeNotes: Updates to the order of Hashed email, conversion happened at, and first party id override. 
   - sha: 9afc05a8a5fcf8c7acbb16833908bad7c1180350
     changeNotes: Added validation for Conversion currency and amount, updated API version to March 2025, added ability to override using UI fields for UserInfo, UserIds and Event Data. 
   - sha: 77a1452bd2a53a0e90f2bd26928f847f86d27130
