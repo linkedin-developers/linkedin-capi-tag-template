@@ -1,11 +1,14 @@
 # linkedin-capi-tag-template
-A Google Tag Manager (GTM) tag template that can be utilized to begin streaming conversion events to LinkedIn's Conversions API (CAPI) endpoint. 
+LinkedIn's official Google Tag Manager tag template for streaming conversion events from server container to LinkedIn's Conversions API endpoint.
 
 ## LinkedIn Developer documentation
 https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api
 
 ## Google Developer documentation
 https://developers.google.com/tag-platform/tag-manager/templates/gallery
+
+## Add to workspace from Community Template Gallery
+https://tagmanager.google.com/gallery/#/owners/linkedin/templates/linkedin-gtm-community-template
 
 ## Template status in Community Template Gallery
 https://tagmanager.google.com/gallery/#/template/linkedin-developers/linkedin-capi-tag-template/status
