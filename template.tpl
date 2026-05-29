@@ -93,6 +93,14 @@ ___TEMPLATE_PARAMETERS___
               {
                 "value": "moatID",
                 "displayValue": "ORACLE_MOAT_ID"
+              },
+              {
+                "value": "ipAddress",
+                "displayValue": "PLAINTEXT_IP_ADDRESS"
+              },
+              {
+                "value": "googleAid",
+                "displayValue": "GOOGLE_AID"
               }
             ]
           },
@@ -227,7 +235,7 @@ const makeTableMap = require('makeTableMap');
 
 // Constants
 const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/";
-const linkedin_api_version = '202503'; // LinkedIn API version (valid for 1 year from release)
+const linkedin_api_version = '202605'; // LinkedIn API version (valid for 1 year from release)
 
 // Input / Event Data Setup
 const eventModel = getAllEventData();
@@ -343,6 +351,14 @@ function getUserIds() {
         {
             idType: 'LINKEDIN_FIRST_PARTY_ADS_TRACKING_UUID',
             idValue: getFirstPartyAdsTrackingUuid()
+        },
+        {
+            idType: 'PLAINTEXT_IP_ADDRESS',
+            idValue: getPlaintextIpAddress()
+        },
+        {
+            idType: 'GOOGLE_AID',
+            idValue: getGoogleAid()
         }
     ];
 
@@ -375,6 +391,15 @@ function getAcxiomId() {
 function getOracleMoatId() {
     return userIdsOverride.moatID || user_data.moatID || '';
 }
+
+function getPlaintextIpAddress() {
+    return userIdsOverride.ipAddress || user_data.ip_address || '';
+}
+
+function getGoogleAid() {
+    return userIdsOverride.googleAid || user_data.googleAid || user_data.gaid || '';
+}
+
 
 // Gets LinkedIn first-party UUID
 function getFirstPartyAdsTrackingUuid() {
