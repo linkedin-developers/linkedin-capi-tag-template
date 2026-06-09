@@ -66,7 +66,7 @@ ___TEMPLATE_PARAMETERS___
       {
         "type": "LABEL",
         "name": "userIdslabel",
-        "displayName": "Tag will attempt to parse cookie/event data but you can provide those parameter explicitly, at least one identifier is needed for a successful request."
+        "displayName": "Tag will attempt to parse cookie/event data but you can provide those parameter explicitly, at least one identifier is needed for a successful request.  The tag automatically collects the following fields in this order of precedence: <ul><li><b>Email</b> — (1) manual override, (2) <i>user_data.sha256_email_address</i>, (3) <i>eventModel.email</i>, (4) <i>user_data.email_address</i>, (5) <i>user_data.email</i>, (6) <i>eventModel.user_email_auto</i> (GTM User-Provided Data variable, AUTO mode), (7) <i>user_provided_data_automatic.email</i>. If not already SHA256-hashed, it will be hashed automatically before being sent.</li><li><b>IP Address</b> — (1) manual override, (2) <i>user_data.ip_address</i>, (3) <i>eventModel.ip_override</i> (auto-captured by the GA4 server-side client).</li></ul>"
       },
       {
         "type": "SIMPLE_TABLE",
@@ -121,6 +121,11 @@ ___TEMPLATE_PARAMETERS___
     "displayName": "User Info Override",
     "groupStyle": "ZIPPY_CLOSED",
     "subParams": [
+      {
+        "type": "LABEL",
+        "name": "userInfoLabel",
+        "displayName": "Tag will automatically collect the following user info fields in this order of precedence: <ul><li><b>First Name</b> — (1) manual override, (2) <i>eventModel.firstName</i> / <i>eventModel.FirstName</i> / <i>eventModel.nameFirst</i> / <i>eventModel.first_name</i>, (3) <i>user_data.first_name</i>, (4) <i>user_address.first_name</i>, (5) <i>eventModel.user_first_name_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.first_name</i>.</li><li><b>Last Name</b> — (1) manual override, (2) <i>eventModel.lastName</i> / <i>eventModel.LastName</i> / <i>eventModel.nameLast</i> / <i>eventModel.last_name</i>, (3) <i>user_data.last_name</i>, (4) <i>user_address.last_name</i>, (5) <i>eventModel.user_last_name_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.last_name</i>.</li><li><b>Country Code</b> — (1) manual override, (2) <i>eventModel.countryCode</i> / <i>eventModel.country</i>, (3) <i>user_data.country</i>, (4) <i>user_address.country</i>, (5) <i>eventModel.user_country_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.country</i>.</li></ul>At least First Name and Last Name are required when sending User Info."
+      }
       {
         "type": "SIMPLE_TABLE",
         "name": "userInfo",
@@ -242,6 +247,10 @@ const eventModel = getAllEventData();
 const user_data = eventModel.user_data || {};
 const user_address_raw = user_data.address || {};
 const user_address = getType(user_address_raw) === 'array' ? (user_address_raw[0] || {}) : user_address_raw;
+// Automatically-collected user-provided data (GTM User-Provided Data variable, AUTO mode)
+const user_provided_data_automatic = eventModel.user_provided_data_automatic || {};
+const auto_address_raw = user_provided_data_automatic.address || {};
+const auto_address = getType(auto_address_raw) === 'array' ? (auto_address_raw[0] || {}) : auto_address_raw;
 const eventDataOverride = makeOverrideTableMap(data.eventData);
 const userIdsOverride = makeOverrideTableMap(data.userIds);
 const userInfoOverride = makeOverrideTableMap(data.userInfo);
@@ -375,6 +384,8 @@ function getUserEmail() {
             eventModel.email ||
             user_data.email_address ||
             user_data.email ||
+            eventModel.user_email_auto ||
+            user_provided_data_automatic.email ||
             '')
         .toLowerCase()
     );
@@ -393,7 +404,9 @@ function getOracleMoatId() {
 }
 
 function getPlaintextIpAddress() {
-    return userIdsOverride.ipAddress || user_data.ip_address || '';
+    // eventModel.ip_override is the client IP auto-captured by the GA4 server-side client.
+    // No IPv4 validation here so IPv6 values pass through (IPv6 matching not supported yet).
+    return userIdsOverride.ipAddress || user_data.ip_address || eventModel.ip_override || '';
 }
 
 function getGoogleAid() {
@@ -418,6 +431,13 @@ function getFirstPartyAdsTrackingUuid() {
       eventModel.user_data.linkedinFirstPartyId.trim() !== ''
     ) {
       eventLinkedinFirstPartyID = eventModel.user_data.linkedinFirstPartyId.trim();
+    } else if (
+      eventModel &&
+      eventModel.li_fat_id &&
+      makeString(eventModel.li_fat_id).trim() !== ''
+    ){
+      // Raw li_fat_id cookie value from the GTM 1st-Party Cookie variable
+      eventLinkedinFirstPartyID = makeString(eventModel.li_fat_id).trim();
     }
     const ga4UserPropPrefix = 'x-ga-mp2-user_properties.';
     const userLinkedinFirstPartyID = getEventData(ga4UserPropPrefix + 'linkedinFirstPartyId') || '';
@@ -434,6 +454,8 @@ function getUserFirstName() {
         eventModel.first_name ||
         user_data.first_name ||
         user_address.first_name ||
+        eventModel.user_first_name_auto ||
+        auto_address.first_name ||
         ''
     );
 }
@@ -447,6 +469,8 @@ function getUserLastName() {
         eventModel.last_name ||
         user_data.last_name ||
         user_address.last_name ||
+        eventModel.user_last_name_auto ||
+        auto_address.last_name ||
         ''
     );
 }
@@ -479,6 +503,8 @@ function getUserCountryCode() {
         eventModel.country ||
         user_data.country ||
         user_address.country ||
+        eventModel.user_country_auto ||
+        auto_address.country ||
         ''
     );
 }
