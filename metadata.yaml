@@ -2,9 +2,11 @@ homepage: "https://www.linkedin.com"
 documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api"
 versions:
   # Latest version
+  - sha: 7e11dcb4142e1d43a58008eba87ce8abf3413e17
+    changeNotes: Reads individual auto-collected user fields (email, first name, last name, country, IP) from GTM User-Provided Data AUTO variables and eventModel, with fallbacks for direct installs. Adds UI labels documenting field precedence order.
+  # Older versions
   - sha: 2c6a74687af70f4f8605f0a0dd669366ab2bec52
     changeNotes: Bumps API version to latest 202605, adds support for PLAINTEXT_IP_ADDRESS and GOOGLE_AID as idType, fixed user_data.address extraction to handle array format, and guard against undefined conversionValue.
-  # Older versions
   - sha: 848b142273be22aa1c1d30ed5aee73153d6f41a0
     changeNotes: Updates to the order of Hashed email, conversion happened at, and first party id override. 
   - sha: 9afc05a8a5fcf8c7acbb16833908bad7c1180350
