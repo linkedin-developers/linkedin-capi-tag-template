@@ -2,7 +2,7 @@ homepage: "https://www.linkedin.com"
 documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api"
 versions:
   # Latest version
-  - sha: 7e11dcb4142e1d43a58008eba87ce8abf3413e17
+  - sha: 1bf7fef45965dc4b825c6b1425dadc3fe9e79f31
     changeNotes: Reads individual auto-collected user fields (email, first name, last name, country, IP) from GTM User-Provided Data AUTO variables and eventModel, with fallbacks for direct installs. Adds UI labels documenting field precedence order.
   # Older versions
   - sha: 2c6a74687af70f4f8605f0a0dd669366ab2bec52
