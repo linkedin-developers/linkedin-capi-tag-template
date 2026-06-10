@@ -125,7 +125,7 @@ ___TEMPLATE_PARAMETERS___
         "type": "LABEL",
         "name": "userInfoLabel",
         "displayName": "Tag will automatically collect the following user info fields in this order of precedence: <ul><li><b>First Name</b> — (1) manual override, (2) <i>eventModel.firstName</i> / <i>eventModel.FirstName</i> / <i>eventModel.nameFirst</i> / <i>eventModel.first_name</i>, (3) <i>user_data.first_name</i>, (4) <i>user_address.first_name</i>, (5) <i>eventModel.user_first_name_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.first_name</i>.</li><li><b>Last Name</b> — (1) manual override, (2) <i>eventModel.lastName</i> / <i>eventModel.LastName</i> / <i>eventModel.nameLast</i> / <i>eventModel.last_name</i>, (3) <i>user_data.last_name</i>, (4) <i>user_address.last_name</i>, (5) <i>eventModel.user_last_name_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.last_name</i>.</li><li><b>Country Code</b> — (1) manual override, (2) <i>eventModel.countryCode</i> / <i>eventModel.country</i>, (3) <i>user_data.country</i>, (4) <i>user_address.country</i>, (5) <i>eventModel.user_country_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.country</i>.</li></ul>At least First Name and Last Name are required when sending User Info."
-      }
+      },
       {
         "type": "SIMPLE_TABLE",
         "name": "userInfo",
