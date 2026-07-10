@@ -237,6 +237,7 @@ const sha256Sync = require('sha256Sync');
 const getType = require('getType');
 const encodeUriComponent = require('encodeUriComponent');
 const makeTableMap = require('makeTableMap');
+const getCookieValues = require('getCookieValues');
 
 // Constants
 const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/";
@@ -441,7 +442,10 @@ function getFirstPartyAdsTrackingUuid() {
     }
     const ga4UserPropPrefix = 'x-ga-mp2-user_properties.';
     const userLinkedinFirstPartyID = getEventData(ga4UserPropPrefix + 'linkedinFirstPartyId') || '';
-    return eventLinkedinFirstPartyID || userLinkedinFirstPartyID || '';
+    // Read li_fat_id cookie as fallback
+    const cookieValues = getCookieValues('li_fat_id');
+    const cookieLinkedinFirstPartyID = cookieValues && cookieValues.length > 0 ? cookieValues[0] : '';
+    return eventLinkedinFirstPartyID || userLinkedinFirstPartyID || cookieLinkedinFirstPartyID || '';
 }
 
 // Fallback lookup for user information
@@ -618,6 +622,39 @@ ___SERVER_PERMISSIONS___
           "value": {
             "type": 1,
             "string": "debug"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "get_cookies",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "cookieAccess",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "cookieNames",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "li_fat_id"
+              }
+            ]
           }
         }
       ]
