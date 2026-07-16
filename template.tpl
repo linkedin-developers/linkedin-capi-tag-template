@@ -69,6 +69,30 @@ ___TEMPLATE_PARAMETERS___
         "displayName": "Tag will attempt to parse cookie/event data but you can provide those parameter explicitly, at least one identifier is needed for a successful request.  The tag automatically collects the following fields in this order of precedence: <ul><li><b>Email</b> — (1) manual override, (2) <i>user_data.sha256_email_address</i>, (3) <i>eventModel.email</i>, (4) <i>user_data.email_address</i>, (5) <i>user_data.email</i>, (6) <i>eventModel.user_email_auto</i> (GTM User-Provided Data variable, AUTO mode), (7) <i>user_provided_data_automatic.email</i>. If not already SHA256-hashed, it will be hashed automatically before being sent.</li><li><b>IP Address</b> — (1) manual override, (2) <i>user_data.ip_address</i>, (3) <i>eventModel.ip_override</i> (auto-captured by the GA4 server-side client).</li></ul>"
       },
       {
+        "type": "TEXT",
+        "name": "userId_sha256email",
+        "displayName": "SHA256 Email - Pre-hashed SHA256 email address. *Optional*",
+        "simpleValueType": true
+      },
+      {
+        "type": "TEXT",
+        "name": "userId_lifatid",
+        "displayName": "LinkedIn First Party Ads Tracking UUID (li_fat_id). *Optional*",
+        "simpleValueType": true
+      },
+      {
+        "type": "TEXT",
+        "name": "userId_acxiomid",
+        "displayName": "Acxiom ID. *Optional*",
+        "simpleValueType": true
+      },
+      {
+        "type": "TEXT",
+        "name": "userId_moatid",
+        "displayName": "Oracle MOAT ID. *Optional*",
+        "simpleValueType": true
+      },
+      {
         "type": "SIMPLE_TABLE",
         "name": "userIds",
         "simpleTableColumns": [
@@ -237,6 +261,7 @@ const sha256Sync = require('sha256Sync');
 const getType = require('getType');
 const encodeUriComponent = require('encodeUriComponent');
 const makeTableMap = require('makeTableMap');
+const getCookieValues = require('getCookieValues');
 
 // Constants
 const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/";
@@ -379,7 +404,8 @@ function getUserEmail() {
     const hashedEmail = getUserDataHashedEmail();
 
     return (
-        (userIdsOverride.email ||
+        (data.userId_sha256email ||
+            userIdsOverride.email ||
             hashedEmail ||
             eventModel.email ||
             user_data.email_address ||
@@ -396,11 +422,11 @@ function getUserDataHashedEmail() {
 }
 
 function getAcxiomId() {
-    return userIdsOverride.acxiomID || user_data.acxiomID || '';
+    return data.userId_acxiomid || userIdsOverride.acxiomID || user_data.acxiomID || '';
 }
 
 function getOracleMoatId() {
-    return userIdsOverride.moatID || user_data.moatID || '';
+    return data.userId_moatid || userIdsOverride.moatID || user_data.moatID || '';
 }
 
 function getPlaintextIpAddress() {
@@ -418,7 +444,9 @@ function getGoogleAid() {
 function getFirstPartyAdsTrackingUuid() {
     let eventLinkedinFirstPartyID = '';
 
-    if (
+    if (data.userId_lifatid && data.userId_lifatid.trim() !== '') {
+      eventLinkedinFirstPartyID = data.userId_lifatid.trim();
+    } else if (
       userIdsOverride &&
       userIdsOverride.linkedinFirstPartyId &&
       userIdsOverride.linkedinFirstPartyId.trim() !== ''
@@ -441,7 +469,10 @@ function getFirstPartyAdsTrackingUuid() {
     }
     const ga4UserPropPrefix = 'x-ga-mp2-user_properties.';
     const userLinkedinFirstPartyID = getEventData(ga4UserPropPrefix + 'linkedinFirstPartyId') || '';
-    return eventLinkedinFirstPartyID || userLinkedinFirstPartyID || '';
+    // Read li_fat_id cookie as fallback
+    const cookieValues = getCookieValues('li_fat_id');
+    const cookieLinkedinFirstPartyID = cookieValues && cookieValues.length > 0 ? cookieValues[0] : '';
+    return eventLinkedinFirstPartyID || userLinkedinFirstPartyID || cookieLinkedinFirstPartyID || '';
 }
 
 // Fallback lookup for user information
@@ -618,6 +649,39 @@ ___SERVER_PERMISSIONS___
           "value": {
             "type": 1,
             "string": "debug"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "get_cookies",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "cookieAccess",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "cookieNames",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "li_fat_id"
+              }
+            ]
           }
         }
       ]
