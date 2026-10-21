@@ -1,6 +1,18 @@
 # linkedin-capi-tag-template
 LinkedIn's official Google Tag Manager tag template for streaming conversion events from server container to LinkedIn's Conversions API endpoint.
 
+## LinkedIn Developer documentation
+https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api
+
+## Google Developer documentation
+https://developers.google.com/tag-platform/tag-manager/templates/gallery
+
+## Add to workspace from Community Template Gallery
+https://tagmanager.google.com/gallery/#/owners/linkedin-developers/templates/linkedin-capi-tag-template
+
+## Template status in Community Template Gallery
+https://tagmanager.google.com/gallery/#/template/linkedin-developers/linkedin-capi-tag-template/status
+
 ## Hashed identifiers
 
 `template.tpl` sends conversion events using LinkedIn API version `202610`.
@@ -33,15 +45,3 @@ name pair remains, no event is sent and the tag calls `gtmOnFailure`.
 See the [Conversions API schema](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api-schema?view=li-lms-2026-10#streaming-conversion-events-api-schema).
 Run the local payload regression tests with `node --test tests/template.test.js`.
 These mock the GTM server APIs; use the GTM template editor for sandbox validation.
-
-## LinkedIn Developer documentation
-https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api
-
-## Google Developer documentation
-https://developers.google.com/tag-platform/tag-manager/templates/gallery
-
-## Add to workspace from Community Template Gallery
-https://tagmanager.google.com/gallery/#/owners/linkedin-developers/templates/linkedin-capi-tag-template
-
-## Template status in Community Template Gallery
-https://tagmanager.google.com/gallery/#/template/linkedin-developers/linkedin-capi-tag-template/status
