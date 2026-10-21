@@ -314,6 +314,7 @@ if (validateUserData()) {
     sendConversionToLinkedIn();
 } else {
     logToConsole('No conversion event was sent to CAPI. You must set 1 out of the 4 acceptable IDs (Acxiom, Oracle, SHA256_Email, or LinkedIn_UUID) or provide firstName & lastName under eventModel.user_data.address.');
+    return data.gtmOnFailure();
 }
 
 // Validates presence of at least one required ID or name
@@ -557,6 +558,8 @@ function sendConversionToLinkedIn() {
         } else {
             data.gtmOnFailure();
         }
+    }).catch(() => {
+        data.gtmOnFailure();
     });
 }
 

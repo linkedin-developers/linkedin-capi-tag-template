@@ -2,9 +2,11 @@ homepage: "https://www.linkedin.com"
 documentation: "https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/conversions-api"
 versions:
   # Latest version
+  - sha: 430369e816c3fcfc824913dda0706e290a0db5f5
+    changeNotes: Calls data.gtmOnFailure() when required user data is missing and on HTTP request errors, instead of leaving the tag pending.
+  # Older versions
   - sha: 1bf7fef45965dc4b825c6b1425dadc3fe9e79f31
     changeNotes: Reads individual auto-collected user fields (email, first name, last name, country, IP) from GTM User-Provided Data AUTO variables and eventModel, with fallbacks for direct installs. Adds UI labels documenting field precedence order.
-  # Older versions
   - sha: 2c6a74687af70f4f8605f0a0dd669366ab2bec52
     changeNotes: Bumps API version to latest 202605, adds support for PLAINTEXT_IP_ADDRESS and GOOGLE_AID as idType, fixed user_data.address extraction to handle array format, and guard against undefined conversionValue.
   - sha: 848b142273be22aa1c1d30ed5aee73153d6f41a0
