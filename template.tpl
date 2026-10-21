@@ -66,7 +66,7 @@ ___TEMPLATE_PARAMETERS___
       {
         "type": "LABEL",
         "name": "userIdslabel",
-        "displayName": "Tag will attempt to parse cookie/event data but you can provide those parameter explicitly, at least one identifier is needed for a successful request.  The tag automatically collects the following fields in this order of precedence: <ul><li><b>Email</b> — (1) manual override, (2) <i>user_data.sha256_email_address</i>, (3) <i>eventModel.email</i>, (4) <i>user_data.email_address</i>, (5) <i>user_data.email</i>, (6) <i>eventModel.user_email_auto</i> (GTM User-Provided Data variable, AUTO mode), (7) <i>user_provided_data_automatic.email</i>. If not already SHA256-hashed, it will be hashed automatically before being sent.</li><li><b>IP Address</b> — (1) manual override, (2) <i>user_data.ip_address</i>, (3) <i>eventModel.ip_override</i> (auto-captured by the GA4 server-side client).</li></ul>"
+        "displayName": "Tag will attempt to parse cookie/event data but you can provide those parameter explicitly, at least one identifier is needed for a successful request. The tag automatically collects the following fields in this order of precedence: <ul><li><b>Email</b> — (1) manual override, (2) <i>user_data.sha256_email_address</i>, (3) <i>eventModel.email</i>, (4) <i>user_data.email_address</i>, (5) <i>user_data.email</i>, (6) <i>eventModel.user_email_auto</i> (GTM User-Provided Data variable, AUTO mode), (7) <i>user_provided_data_automatic.email</i>. If not already SHA256-hashed, it will be hashed automatically before being sent.</li><li><b>IP Address</b> — (1) manual override, (2) <i>user_data.ip_address</i>, (3) <i>eventModel.ip_override</i> (auto-captured by the GA4 server-side client).</li><li><b>Hashed IP Address</b> — (1) manual override, (2) <i>user_data.sha256_ip_address</i>. Provide an IPv4 address already hashed using SHA256 as a 64-character hexadecimal string.</li></ul>"
       },
       {
         "type": "SIMPLE_TABLE",
@@ -99,6 +99,10 @@ ___TEMPLATE_PARAMETERS___
                 "displayValue": "PLAINTEXT_IP_ADDRESS"
               },
               {
+                "value": "hashedIpAddress",
+                "displayValue": "SHA256_IP_ADDRESS"
+              },
+              {
                 "value": "googleAid",
                 "displayValue": "GOOGLE_AID"
               }
@@ -124,7 +128,7 @@ ___TEMPLATE_PARAMETERS___
       {
         "type": "LABEL",
         "name": "userInfoLabel",
-        "displayName": "Tag will automatically collect the following user info fields in this order of precedence: <ul><li><b>First Name</b> — (1) manual override, (2) <i>eventModel.firstName</i> / <i>eventModel.FirstName</i> / <i>eventModel.nameFirst</i> / <i>eventModel.first_name</i>, (3) <i>user_data.first_name</i>, (4) <i>user_address.first_name</i>, (5) <i>eventModel.user_first_name_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.first_name</i>.</li><li><b>Last Name</b> — (1) manual override, (2) <i>eventModel.lastName</i> / <i>eventModel.LastName</i> / <i>eventModel.nameLast</i> / <i>eventModel.last_name</i>, (3) <i>user_data.last_name</i>, (4) <i>user_address.last_name</i>, (5) <i>eventModel.user_last_name_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.last_name</i>.</li><li><b>Country Code</b> — (1) manual override, (2) <i>eventModel.countryCode</i> / <i>eventModel.country</i>, (3) <i>user_data.country</i>, (4) <i>user_address.country</i>, (5) <i>eventModel.user_country_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.country</i>.</li></ul>At least First Name and Last Name are required when sending User Info."
+        "displayName": "Tag will automatically collect the following user info fields in this order of precedence: <ul><li><b>First Name</b> — (1) manual override, (2) <i>eventModel.firstName</i> / <i>eventModel.FirstName</i> / <i>eventModel.nameFirst</i> / <i>eventModel.first_name</i>, (3) <i>user_data.first_name</i>, (4) <i>user_address.first_name</i>, (5) <i>eventModel.user_first_name_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.first_name</i>.</li><li><b>Last Name</b> — (1) manual override, (2) <i>eventModel.lastName</i> / <i>eventModel.LastName</i> / <i>eventModel.nameLast</i> / <i>eventModel.last_name</i>, (3) <i>user_data.last_name</i>, (4) <i>user_address.last_name</i>, (5) <i>eventModel.user_last_name_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.last_name</i>.</li><li><b>Hashed First / Last Name</b> — (1) manual override, (2) <i>eventModel.hashedFirstName</i> / <i>eventModel.hashedLastName</i>, (3) <i>user_data.sha256_first_name</i> / <i>user_data.sha256_last_name</i>, (4) <i>user_address.sha256_first_name</i> / <i>user_address.sha256_last_name</i>. Before hashing, lowercase the name, remove spaces and punctuation, and encode special characters as UTF-8.</li><li><b>Country Code</b> — (1) manual override, (2) <i>eventModel.countryCode</i> / <i>eventModel.country</i>, (3) <i>user_data.country</i>, (4) <i>user_address.country</i>, (5) <i>eventModel.user_country_auto</i> (GTM User-Provided Data variable, AUTO mode), (6) <i>user_provided_data_automatic.address.country</i>.</li></ul>Both a first name and a last name are required when sending User Info; either may be plaintext or SHA256-hashed."
       },
       {
         "type": "SIMPLE_TABLE",
@@ -143,6 +147,14 @@ ___TEMPLATE_PARAMETERS___
               {
                 "value": "lastName",
                 "displayValue": "Last Name"
+              },
+              {
+                "value": "hashedFirstName",
+                "displayValue": "Hashed First Name (SHA256)"
+              },
+              {
+                "value": "hashedLastName",
+                "displayValue": "Hashed Last Name (SHA256)"
               },
               {
                 "value": "jobTitle",
@@ -240,7 +252,7 @@ const makeTableMap = require('makeTableMap');
 
 // Constants
 const CONV_API_ENDPOINT = "https://api.linkedin.com/rest/conversionEvents/";
-const linkedin_api_version = '202605'; // LinkedIn API version (valid for 1 year from release)
+const linkedin_api_version = '202610'; // LinkedIn API version (valid for 1 year from release)
 
 // Input / Event Data Setup
 const eventModel = getAllEventData();
@@ -286,7 +298,7 @@ const conversionValue = data.conversionValue ? JSON.parse(data.conversionValue) 
 
 // Add user info if available
 const userDataInfo = getUserInfo();
-if (userDataInfo && userDataInfo.firstName && userDataInfo.lastName) {
+if (hasNamePair(userDataInfo)) {
     conversion_event.userData.userInfo = userDataInfo;
 }
 
@@ -313,7 +325,7 @@ if (conversionValue.currencyCode !== "" && conversionValue.amount > 0) {
 if (validateUserData()) {
     sendConversionToLinkedIn();
 } else {
-    logToConsole('No conversion event was sent to CAPI. You must set 1 out of the 4 acceptable IDs (Acxiom, Oracle, SHA256_Email, or LinkedIn_UUID) or provide firstName & lastName under eventModel.user_data.address.');
+    logToConsole('No conversion event was sent to CAPI. Provide a user identifier (email, LinkedIn UUID, Acxiom, Oracle, plaintext or SHA256 IP address, or Google AID), or both a first and last name (plaintext or SHA256).');
     return data.gtmOnFailure();
 }
 
@@ -331,12 +343,18 @@ function validateUserData() {
 
     if (!data_is_valid_flag) {
         const userInfo = conversion_event.userData.userInfo;
-        if (userInfo && userInfo.firstName && userInfo.lastName) {
+        if (hasNamePair(userInfo)) {
             data_is_valid_flag = true;
         }
     }
 
     return data_is_valid_flag;
+}
+
+function hasNamePair(userInfo) {
+    return userInfo &&
+        (userInfo.firstName || userInfo.hashedFirstName) &&
+        (userInfo.lastName || userInfo.hashedLastName);
 }
 
 // Converts array of overrides into map
@@ -365,6 +383,10 @@ function getUserIds() {
         {
             idType: 'PLAINTEXT_IP_ADDRESS',
             idValue: getPlaintextIpAddress()
+        },
+        {
+            idType: 'SHA256_IP_ADDRESS',
+            idValue: getHashedIpAddress()
         },
         {
             idType: 'GOOGLE_AID',
@@ -412,6 +434,10 @@ function getPlaintextIpAddress() {
 
 function getGoogleAid() {
     return userIdsOverride.googleAid || user_data.googleAid || user_data.gaid || '';
+}
+
+function getHashedIpAddress() {
+    return validateHash(userIdsOverride.hashedIpAddress || user_data.sha256_ip_address || '', 'hashedIpAddress');
 }
 
 
@@ -476,6 +502,22 @@ function getUserLastName() {
     );
 }
 
+function getUserHashedFirstName() {
+    return validateHash(userInfoOverride.hashedFirstName ||
+        eventModel.hashedFirstName ||
+        user_data.sha256_first_name ||
+        user_address.sha256_first_name ||
+        '', 'hashedFirstName');
+}
+
+function getUserHashedLastName() {
+    return validateHash(userInfoOverride.hashedLastName ||
+        eventModel.hashedLastName ||
+        user_data.sha256_last_name ||
+        user_address.sha256_last_name ||
+        '', 'hashedLastName');
+}
+
 function getUserJobTitle() {
     return (
         userInfoOverride.jobTitle ||
@@ -512,19 +554,37 @@ function getUserCountryCode() {
 
 // Builds userInfo object
 function getUserInfo() {
-    return {
-        firstName: getUserFirstName(),
-        lastName: getUserLastName(),
+    const userInfo = {
         title: getUserJobTitle(),
         companyName: getUserCompanyName(),
         countryCode: getUserCountryCode()
     };
+    const firstName = getUserFirstName();
+    const lastName = getUserLastName();
+    const hashedFirstName = getUserHashedFirstName();
+    const hashedLastName = getUserHashedLastName();
+    if (firstName) userInfo.firstName = firstName;
+    if (lastName) userInfo.lastName = lastName;
+    if (hashedFirstName) {
+        userInfo.hashedFirstName = hashedFirstName;
+    }
+    if (hashedLastName) {
+        userInfo.hashedLastName = hashedLastName;
+    }
+    return userInfo;
 }
 
 // Check if a value is already a valid SHA256 hash
 function isHashed(value) {
     if (!value) return false;
     return makeString(value).match('^[A-Fa-f0-9]{64}$') !== null;
+}
+
+function validateHash(value, fieldName) {
+    if (!value) return '';
+    if (getType(value) === 'string' && value.length === 64 && isHashed(value)) return value;
+    logToConsole('Ignoring invalid SHA256 format for ' + fieldName + ': expected exactly 64 hexadecimal characters.');
+    return '';
 }
 
 // Hashes non-object and non-array string values if not already hashed
@@ -641,5 +701,3 @@ scenarios: []
 ___NOTES___
 
 Created on 9/27/2023, 11:40:00 AM
-
-
